@@ -165,4 +165,44 @@ describe('hdkey', function () {
       assert.ok(!masterKey.privateExtendedKey, 'xpriv is falsy')
     })
   })
+
+  describe('> when hardened', function () {
+    it('> can not extend string path', function () {
+      var seed = '000102030405060708090a0b0c0d0e0f'
+      var masterKey = HDKey.fromMasterSeed(new Buffer(seed, 'hex'))
+
+      const xpub = masterKey.derive('m/0\'').publicExtendedKey
+      assert.throws(function () {
+        HDKey.fromExtendedKey(xpub).deriveChild('c\'')
+      }, /Could not derive hardened child key/)
+    })
+
+    it('> can not extend int path', function () {
+      var seed = '000102030405060708090a0b0c0d0e0f'
+      var masterKey = HDKey.fromMasterSeed(new Buffer(seed, 'hex'))
+
+      const xpub = masterKey.derive('m/0\'').publicExtendedKey
+      assert.throws(function () {
+        HDKey.fromExtendedKey(xpub).deriveChild(HDKey.HARDENED_OFFSET)
+      }, /Could not derive hardened child key/)
+    })
+
+    it('> non-hardened int differs', function () {
+      var seed = '000102030405060708090a0b0c0d0e0f'
+      var masterKey = HDKey.fromMasterSeed(new Buffer(seed, 'hex'))
+
+      var hardenedKey = masterKey.derive('m/0\'')
+      var nonHardenedKey = masterKey.derive('m/0')
+      assert.notEqual(hardenedKey.privateKey, nonHardenedKey.privateKey)
+    })
+
+    it('> non-hardened string path differs', function () {
+      var seed = '000102030405060708090a0b0c0d0e0f'
+      var masterKey = HDKey.fromMasterSeed(new Buffer(seed, 'hex'))
+
+      var hardenedKey = masterKey.derive('m/purpose\'')
+      var nonHardenedKey = masterKey.derive('m/purpose')
+      assert.notEqual(hardenedKey.privateKey, nonHardenedKey.privateKey)
+    })
+  })
 })
